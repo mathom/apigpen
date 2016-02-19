@@ -1,0 +1,54 @@
+#!/usr/bin/env python
+
+import boto3
+import json
+import sys
+import yaml
+from datetime import datetime
+
+from apigpen import export_api, import_api, list_apis
+
+description = '''Import and export API Gateway projects.
+NOTE: this tool assumes you won't have
+more than one REST API with the same name.
+'''
+
+
+def json_serial(obj):
+    if isinstance(obj, datetime):
+        serial = obj.isoformat()
+        return serial
+
+    raise TypeError("{0} not serializable".format(obj))
+
+
+if __name__=='__main__':
+    import argparse
+    parser = argparse.ArgumentParser(description=description)
+    parser.add_argument('-l', '--list', action='store_true',
+                        help='List REST APIs')
+    parser.add_argument('-e', '--export', metavar='NAME_OR_ID',
+                        help='Export REST API by name or ID')
+    parser.add_argument('-i', '--import', dest='import_', metavar='NAME_OR_ID',
+                        help='Import REST API')
+    parser.add_argument('-j', '--json', action='store_true',
+                        help='Use JSON instead of YAML (the default)')
+    args = parser.parse_args()
+
+    dumps = lambda obj: yaml.safe_dump(obj, default_flow_style=False)
+    loads = yaml.load
+
+    if args.json:
+        dumps = lambda obj: json.dumps(obj, default=json_serial,
+                                       indent=4, sort_keys=True)
+        loads = json.loads
+
+    if args.list:
+        for item in sorted(list_apis(), key=lambda item: item['name']):
+            print('{id} {name}'.format(**item))
+    elif args.export:
+        print(dumps(export_api(args.export)))
+    elif args.import_:
+        print(import_api(args.import_, loads(sys.stdin)))
+    else:
+        parser.print_usage()
