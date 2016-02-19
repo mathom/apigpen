@@ -18,10 +18,10 @@ fghij67890 another-one
 
 When you want to export, pass the API name or ID to the `--export` flag:
 ```
-$ apigpen --export my-great-api
+$ apigpen --export my-great-api > myapi.yaml
 ```
 
-Note: You can use `--json` if you prefer JSON over YAML output.
+Note: You can add `--json` if you prefer JSON over YAML output.
 
 Importing works similarly, except you are providing a new name for the imported API:
 ```
