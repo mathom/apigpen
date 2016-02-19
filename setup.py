@@ -1,6 +1,7 @@
 from setuptools import setup
 import os
 import re
+import ast
 
 # snippet from github.com/miserlou/zappa
 try:
