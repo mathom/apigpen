@@ -3,6 +3,8 @@
 `apigpen` is a tool to import and export your [AWS API Gateway](https://aws.amazon.com/api-gateway) projects
 for version control, manipulation, or other similar tasks.
 
+It currently does not import/export API keys, custom domains, or client certificates.
+
 ## Installation
 
 `pip install git+git://github.com/mathom/apigpen.git`
