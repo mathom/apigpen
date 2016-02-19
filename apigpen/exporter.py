@@ -38,7 +38,7 @@ def get_resources(restApiId):
             integ['integrationResponses'] = integ['integrationResponses'].values()
             for resp in integ['integrationResponses']:
                 resp['responseTemplates'] = {
-                    key: (value or '') for key,value in resp['responseTemplates'].items()
+                    key: (value or '') for key,value in resp.get('responseTemplates', {}).items()
                 }
                         
             methods.append(response)
