@@ -8,7 +8,7 @@ from datetime import datetime
 
 from apigpen import export_api, import_api, list_apis
 
-description = '''Import and export API Gateway projects.
+DESCRIPTION = '''Import and export API Gateway projects.
 NOTE: this tool assumes you won't have
 more than one REST API with the same name.
 '''
@@ -22,9 +22,46 @@ def json_serial(obj):
     raise TypeError("{0} not serializable".format(obj))
 
 
+def do_export(args):
+    dumps = lambda obj: yaml.safe_dump(obj, default_flow_style=False)
+
+    if args.json:
+        dumps = lambda obj: json.dumps(obj, default=json_serial,
+                                       indent=4, sort_keys=True)
+    
+    data = dumps(export_api(args.export))
+    if args.file:
+        with open(args.file, 'w') as f:
+            f.write(data)
+    else:
+        print(data)
+
+
+def do_import(args):
+    loads = yaml.load
+
+    if args.json:
+        loads = json.loads
+
+    name = args.import_
+
+    if args.file:
+        with open(args.file, 'r') as f:
+            data = loads(f)
+    else:
+        data = loads(sys.stdin)
+            
+    print(import_api(name, data))
+
+
+def do_list(args):
+    for item in sorted(list_apis(), key=lambda item: item['name']):
+        print('{id} {name}'.format(**item))
+
+
 if __name__=='__main__':
     import argparse
-    parser = argparse.ArgumentParser(description=description)
+    parser = argparse.ArgumentParser(description=DESCRIPTION)
     parser.add_argument('-l', '--list', action='store_true',
                         help='List REST APIs')
     parser.add_argument('-e', '--export', metavar='NAME_OR_ID',
@@ -33,22 +70,15 @@ if __name__=='__main__':
                         help='Import REST API')
     parser.add_argument('-j', '--json', action='store_true',
                         help='Use JSON instead of YAML (the default)')
+    parser.add_argument('-f', '--file', metavar='FILENAME',
+                        help='Use FILENAME as input or output for import/export.')
     args = parser.parse_args()
 
-    dumps = lambda obj: yaml.safe_dump(obj, default_flow_style=False)
-    loads = yaml.load
-
-    if args.json:
-        dumps = lambda obj: json.dumps(obj, default=json_serial,
-                                       indent=4, sort_keys=True)
-        loads = json.loads
-
     if args.list:
-        for item in sorted(list_apis(), key=lambda item: item['name']):
-            print('{id} {name}'.format(**item))
+        do_list(args)
     elif args.export:
-        print(dumps(export_api(args.export)))
+        do_export(args)
     elif args.import_:
-        print(import_api(args.import_, loads(sys.stdin)))
+        do_import(args)
     else:
         parser.print_usage()

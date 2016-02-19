@@ -25,13 +25,25 @@ def get_resources(restApiId):
         resources.extend(page['items'])
 
     for resource in resources:
-        for method, body in resource.get('resourceMethods', {}).items():
-            if not body:
-                # for some reason this version of boto doesn't fill this out
-                body.update(api.get_method(restApiId=restApiId,
-                                        resourceId=resource['id'],
-                                        httpMethod=method))
-                del body['ResponseMetadata']
+        method_names = resource.get('resourceMethods', {}).keys()
+        methods = []
+
+        for method in method_names:
+            response = api.get_method(restApiId=restApiId,
+                                      resourceId=resource['id'],
+                                      httpMethod=method)
+            del response['ResponseMetadata']
+            response['methodResponses'] = response['methodResponses'].values()
+            integ = response['methodIntegration']
+            integ['integrationResponses'] = integ['integrationResponses'].values()
+            for resp in integ['integrationResponses']:
+                resp['responseTemplates'] = {
+                    key: (value or '') for key,value in resp['responseTemplates'].items()
+                }
+                        
+            methods.append(response)
+
+        resource['resourceMethods'] = methods
             
     return resources
 
@@ -107,7 +119,7 @@ def list_apis(name=None):
     rest_apis = []
     for page in pages:
         for item in page['items']:
-            if name is None or name in item['name']:
+            if name is None or name == item['name']:
                 rest_apis.append(item)
 
     return rest_apis
