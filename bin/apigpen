@@ -22,7 +22,7 @@ def json_serial(obj):
 
 
 def dump_yaml(data, stream):
-    return yaml.safe_dump(data, stream, default_flow_style=True)
+    return yaml.safe_dump(data, stream, default_flow_style=False)
 
 
 def dump_json(data, stream):

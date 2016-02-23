@@ -1,14 +1,9 @@
 import boto3
-import dateutil.parser
 from .exceptions import AlreadyExistsException
 from .exporter import list_apis
 
 
 PREMADE_MODELS = ['Empty', 'Error']
-
-
-def to_date(datestring):
-    return dateutil.parser.parse(datestring)
 
 
 def import_models(restApiId, models):
@@ -103,6 +98,21 @@ def import_resources(restApiId, resources):
     import_resource(restApiId, root)
 
 
+def import_deployments(restApiId, deployments):
+    api = boto3.client('apigateway')
+
+    for deployment in sorted(deployments, key=lambda x: x['createdDate']):
+        for stage in deployment.get('stages', []):
+            api.create_deployment(restApiId=restApiId,
+                                  **strip_args(stage,
+                                               'stageName',
+                                               'stageDescription',
+                                               'description',
+                                               'cacheClusterEnabled',
+                                               'cacheClusterSize',
+                                               'variables'))
+
+
 def import_api(name, data):
     api = boto3.client('apigateway')
 
@@ -117,5 +127,6 @@ def import_api(name, data):
     import_models(restApiId, data['models'])
     import_authorizers(restApiId, data['authorizers'])
     import_resources(restApiId, data['resources'])
+    import_deployments(restApiId, data['deployments'])
 
     return restApiId
