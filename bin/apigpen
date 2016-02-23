@@ -21,19 +21,26 @@ def json_serial(obj):
     raise TypeError("{0} not serializable".format(obj))
 
 
+def dump_yaml(data, stream):
+    return yaml.safe_dump(data, stream, default_flow_style=True)
+
+
+def dump_json(data, stream):
+    return json.dump(data, stream, default=json_serial,
+                     indent=4, sort_keys=True)
+
+
 def do_export(args):
-    dumps = lambda obj: yaml.safe_dump(obj, default_flow_style=False)
+    dumps = dump_yaml
 
     if args.json:
-        dumps = lambda obj: json.dumps(obj, default=json_serial,
-                                       indent=4, sort_keys=True)
+        dumps = dump_json
 
-    data = dumps(export_api(args.export))
     if args.file:
         with open(args.file, 'w') as f:
-            f.write(data)
+            dumps(export_api(args.export), f)
     else:
-        print(data)
+        dumps(export_api(args.export), sys.stdout)
 
 
 def do_import(args):
