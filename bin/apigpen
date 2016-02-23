@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-import boto3
 import json
 import sys
 import yaml
@@ -28,7 +27,7 @@ def do_export(args):
     if args.json:
         dumps = lambda obj: json.dumps(obj, default=json_serial,
                                        indent=4, sort_keys=True)
-    
+
     data = dumps(export_api(args.export))
     if args.file:
         with open(args.file, 'w') as f:
@@ -50,7 +49,7 @@ def do_import(args):
             data = loads(f)
     else:
         data = loads(sys.stdin)
-            
+
     print(import_api(name, data))
 
 
@@ -59,7 +58,7 @@ def do_list(args):
         print('{id} {name}'.format(**item))
 
 
-if __name__=='__main__':
+if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser(description=DESCRIPTION)
     parser.add_argument('-l', '--list', action='store_true',

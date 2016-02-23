@@ -40,11 +40,11 @@ def get_resources(restApiId):
                 resp['responseTemplates'] = {
                     key: (value or '') for key,value in resp.get('responseTemplates', {}).items()
                 }
-                        
+
             methods.append(response)
 
         resource['resourceMethods'] = methods
-            
+
     return resources
 
 
@@ -64,7 +64,6 @@ def get_deployments(restApiId):
         deployment['stages'] = response['item']  # strange, seems like it should be "items"
         for stage in deployment['stages']:
             del stage['deploymentId']  # waste of space
-            
 
     return deployments
 
@@ -81,17 +80,17 @@ def get_authorizers(restApiId):
         response = api.get_authorizers(restApiId=restApiId,
                                        position=response['NextToken'])
         authorizers.extend(response['items'])
-        
+
     return authorizers
 
-    
+
 def export_api(name_or_id):
     api = boto3.client('apigateway')
     try:
         rest_api = api.get_rest_api(restApiId=name_or_id)
         del rest_api['ResponseMetaData']
     except ClientError as e:
-        if e.response.get('Error',{}).get('Code') == 'NotFoundException':
+        if e.response.get('Error', {}).get('Code') == 'NotFoundException':
             # try searching by name
             results = list(list_apis(name_or_id))
             if not results:
@@ -111,7 +110,7 @@ def export_api(name_or_id):
 
     return result
 
-    
+
 def list_apis(name=None):
     api = boto3.client('apigateway')
     pages = api.get_paginator('get_rest_apis').paginate()
