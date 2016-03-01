@@ -95,7 +95,8 @@ def import_resources(restApiId, resources):
             parent.setdefault('_children', []).append(res)
 
     # traverse the tree
-    import_resource(restApiId, root)
+    if root:
+        import_resource(restApiId, root)
 
 
 def import_deployments(restApiId, deployments):
@@ -124,9 +125,9 @@ def import_api(name, data):
     response = api.create_rest_api(name=name, description=data['description'])
     restApiId = response['id']
 
-    import_models(restApiId, data['models'])
-    import_authorizers(restApiId, data['authorizers'])
-    import_resources(restApiId, data['resources'])
-    import_deployments(restApiId, data['deployments'])
+    import_models(restApiId, data.get('models',[]))
+    import_authorizers(restApiId, data.get('authorizers'.[]))
+    import_resources(restApiId, data.get('resources',[]))
+    import_deployments(restApiId, data.get('deployments',[]))
 
     return restApiId
