@@ -33,12 +33,12 @@ def get_resources(restApiId):
                                       resourceId=resource['id'],
                                       httpMethod=method)
             del response['ResponseMetadata']
-            response['methodResponses'] = response['methodResponses'].values()
+            response['methodResponses'] = list(response['methodResponses'].values())
             integ = response['methodIntegration']
-            integ['integrationResponses'] = integ['integrationResponses'].values()
+            integ['integrationResponses'] = list(integ['integrationResponses'].values())
             for resp in integ['integrationResponses']:
                 resp['responseTemplates'] = {
-                    key: (value or '') for key,value in resp.get('responseTemplates', {}).items()
+                    key: (value or '') for key, value in resp.get('responseTemplates', {}).items()
                 }
 
             methods.append(response)

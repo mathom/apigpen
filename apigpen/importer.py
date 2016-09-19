@@ -2,7 +2,6 @@ import boto3
 from .exceptions import AlreadyExistsException
 from .exporter import list_apis
 
-
 PREMADE_MODELS = ['Empty', 'Error']
 
 
@@ -26,9 +25,8 @@ def import_authorizers(restApiId, authorizers):
 
 
 def strip_args(adict, *args):
-    '''Utility to strip ids and values with None in them for boto args'''
-    return {key: value for key, value in adict.items()
-            if value is not None and key in args}
+    """Utility to strip ids and values with None in them for boto args"""
+    return {key: value for key, value in adict.items() if value is not None and key in args}
 
 
 def import_resource(restApiId, res):
@@ -36,8 +34,7 @@ def import_resource(restApiId, res):
     if res['path'] == '/':
         resourceId = res['id']  # root always exists
     else:
-        response = api.create_resource(restApiId=restApiId,
-                                       **strip_args(res, 'parentId', 'pathPart'))
+        response = api.create_resource(restApiId=restApiId, **strip_args(res, 'parentId', 'pathPart'))
         resourceId = response['id']
 
     for method in res['resourceMethods']:
@@ -46,27 +43,17 @@ def import_resource(restApiId, res):
         methodIntegration = method.pop('methodIntegration').copy()
 
         # build responses
-        api.put_method(restApiId=restApiId,
-                       resourceId=resourceId,
-                       **method)
+        api.put_method(restApiId=restApiId, resourceId=resourceId, **method)
         for resp in methodResponses:
-            api.put_method_response(restApiId=restApiId,
-                                    resourceId=resourceId,
-                                    httpMethod=method['httpMethod'],
-                                    **resp)
+            api.put_method_response(restApiId=restApiId, resourceId=resourceId, httpMethod=method['httpMethod'], **resp)
         # build integrations
         integrationResponses = methodIntegration.pop('integrationResponses', [])
         integrationHttpMethod = methodIntegration.pop('httpMethod')
-        api.put_integration(restApiId=restApiId,
-                            resourceId=resourceId,
-                            httpMethod=method['httpMethod'],
-                            integrationHttpMethod=integrationHttpMethod,
-                            **methodIntegration)
+        api.put_integration(restApiId=restApiId, resourceId=resourceId, httpMethod=method['httpMethod'],
+                            integrationHttpMethod=integrationHttpMethod, **methodIntegration)
         for resp in integrationResponses:
             resp = resp.copy()
-            api.put_integration_response(restApiId=restApiId,
-                                         resourceId=resourceId,
-                                         httpMethod=method['httpMethod'],
+            api.put_integration_response(restApiId=restApiId, resourceId=resourceId, httpMethod=method['httpMethod'],
                                          **resp)
 
     for child in res.get('_children', []):
@@ -105,13 +92,8 @@ def import_deployments(restApiId, deployments):
     for deployment in sorted(deployments, key=lambda x: x['createdDate']):
         for stage in deployment.get('stages', []):
             api.create_deployment(restApiId=restApiId,
-                                  **strip_args(stage,
-                                               'stageName',
-                                               'stageDescription',
-                                               'description',
-                                               'cacheClusterEnabled',
-                                               'cacheClusterSize',
-                                               'variables'))
+                                  **strip_args(stage, 'stageName', 'stageDescription', 'description',
+                                               'cacheClusterEnabled', 'cacheClusterSize', 'variables'))
 
 
 def import_api(name, data):
@@ -125,9 +107,9 @@ def import_api(name, data):
     response = api.create_rest_api(name=name, description=data['description'])
     restApiId = response['id']
 
-    import_models(restApiId, data.get('models',[]))
-    import_authorizers(restApiId, data.get('authorizers'.[]))
-    import_resources(restApiId, data.get('resources',[]))
-    import_deployments(restApiId, data.get('deployments',[]))
+    import_models(restApiId, data.get('models', []))
+    import_authorizers(restApiId, data.get('authorizers', []))
+    import_resources(restApiId, data.get('resources', []))
+    import_deployments(restApiId, data.get('deployments', []))
 
     return restApiId
